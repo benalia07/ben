@@ -1,0 +1,49 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using System.IO;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        var host = new WebHostBuilder()
+            .UseKestrel()
+            .UseStartup<Startup>()
+            .Build();
+
+        await host.RunAsync();
+    }
+}
+
+class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddControllers();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapGet("/string", async context =>
+            {
+                string value = "hello world";
+                await context.Response.WriteAsync(value.ToUpper());
+            });
+
+            endpoints.MapPost("/string", async context =>
+            {
+                string value = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                await context.Response.WriteAsync(value.ToUpper());
+            });
+        });
+    }
+}
+
